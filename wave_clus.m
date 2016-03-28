@@ -168,6 +168,7 @@ handles.par.file_name_to_show = [pathname filename];
 if data_handler.with_results %data have _times files
     [clu, tree, spikes, index, inspk, ipermut, classes, forced,temp] = data_handler.load_results();
     rejected = data_handler.load_rejected();
+    handles.setclus = 1;
 else
     if data_handler.with_spikes  %data have some time of _spikes files
         [spikes, index] = data_handler.load_spikes(); 
@@ -222,6 +223,7 @@ else
     [clu,tree] = run_cluster(handles.par);
     forced = false(size(spikes,1) ,1);
     rejected = false(1, size(spikes,1));
+    handles.setclus = 2; %uses min cluster size but doesn't reset force
 end
 
 if (data_handler.with_raw || data_handler.with_psegment) && handles.par.cont_segment         %raw exists
@@ -233,7 +235,10 @@ end
 %Fixing lost elements of clu . Skiped elements will be  class -1 because in
 %all the uses of clu are like: clu(temp,3:end)+1
 if handles.par.permut == 'y' && ~isempty(clu)
-    clu_aux = zeros(size(clu,1),size(spikes,1)) -1;% + 1000; %when update classes from clu, not selected go to cluster 1001
+    if isempty(ipermut) %load from old result without ipermut or par, but par.permut=='y'
+       ipermut = 1:length(inspk);
+    end
+    clu_aux = zeros(size(clu,1),2 + size(spikes,1)) -1;%when update classes from clu, not selected go to cluster 1001
     clu_aux(:,ipermut+2) = clu(:,(1:length(ipermut))+2);
     clu_aux(:,1:2) = clu(:,1:2);
     clu = clu_aux;
@@ -314,7 +319,7 @@ handles.force = 0;
 handles.merge = 0;
 
 handles.minclus = handles.par.min_clus;
-handles.setclus = 2; %uses min cluster size but doesn't reset force
+
 USER_DATA{13} = forced;
 USER_DATA{14} = forced;
 set(handles.wave_clus_figure,'userdata',USER_DATA);
@@ -323,7 +328,7 @@ clear clustering_results classes rejected spikes
 % mark clusters when new data is loaded
 guidata(hObject, handles); %this is need for plot the isi histograms
 
-plot_spikes(handles); %This function edit userdata
+plot_spikes(handles); %This function edits userdata
 USER_DATA = get(handles.wave_clus_figure,'userdata');
 set(handles.wave_clus_figure,'userdata',USER_DATA);
 
@@ -628,10 +633,16 @@ function force_unforce_button_Callback(hObject, eventdata, handles)
 %                 new_forced(fix_class) =forced(fix_class);
 %             end
 %         end
+        set(handles.fix1_button,'value',0);
+        set(handles.fix2_button,'value',0);
+        set(handles.fix3_button,'value',0);
+        for i=4:par.max_clus
+            eval(['par.fix' num2str(i) '=0;']);
+        end
         classes(forced(:) & (~new_forced(:)) & (~rejected(:))) = 0;  %the elements that before were forced but it isn't force any more, pass to class 0
-        USER_DATA{13} = new_forced;
+        USER_DATA{13} = new_forced; 
         handles.force = 0;
-        handles.setclus = 0;
+        handles.setclus = 1;
         set(hObject,'String','Force')
         %set(handles.change_temperature_button,'enable','on');
     end
@@ -664,7 +675,7 @@ function manual_clus_button_Callback(hObject, eventdata,handles_local, cl)
     
     if cl == -1
         rect = getrect(handles_local.projections);
-        valids = ~USER_DATA{15}; %First, I don't select the rejected
+        valids = ~USER_DATA{15}(:); %First, I don't select the rejected
     else
         eval(['rect = getrect(handles_local.spikes' num2str(cl) ');']);
         valids = ~USER_DATA{15}(:) & (classes(:)==cl); %First, I don't select the rejected

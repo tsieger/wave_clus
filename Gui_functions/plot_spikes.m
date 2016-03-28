@@ -33,7 +33,7 @@ end
 
 % Classes should be consecutive numbers
 classes_names = sort(unique(classes));
-
+classes_names = classes_names(classes_names>0);
 
 % updates 'clustering_results_bk'
 clustering_results_bk = clustering_results;
@@ -51,7 +51,7 @@ if handles.force==1
 end
 
 
-classes_names = classes_names(classes_names>0);
+
 for i = 1:min(length(classes_names),par.max_clus)
    c = classes_names(i);
    if c~= i
@@ -341,21 +341,23 @@ end
 draw_histograms(handles, 0:min(nclusters,3),USER_DATA);
 
 %Resize axis
-ymin = min(ylimit(:,1));
-ymax = max(ylimit(:,2));
-for i=1:4
-    clus_ax = eval(['handles.spikes' num2str(i-1)]); 
-    ylim(clus_ax,[ymin ymax]);
-end
-
-
-for i =1:figs_num
-    if ~isempty(opened_figs{i})
-        set(opened_figs{i},'Visible', 'on'); 
+if ~isempty(ylimit)
+    ymin = min(ylimit(:,1));
+    ymax = max(ylimit(:,2));
+    for i=1:4
+        clus_ax = eval(['handles.spikes' num2str(i-1)]); 
+        ylim(clus_ax,[ymin ymax]);
     end
 end
 
-if temp > 0
+for i =1:figs_num
+    if ~isempty(opened_figs{i})  
+    	set(opened_figs{i},'units','pixel','position',get(0,'screensize'))
+	set(opened_figs{i},'Visible', 'on'); 
+    end
+end
+
+if ~isempty(USER_DATA{5})
     mark_clusters_temperature_diagram(handles,USER_DATA{5},clustering_results)
 end
 set(handles.file_name,'string', par.file_name_to_show);
