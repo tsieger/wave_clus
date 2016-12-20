@@ -722,20 +722,7 @@ function manual_clus_button_Callback(hObject, eventdata,handles_local, cl)
             set(hObject,'Enable','on');
             return;
         end
-        [Mh, Mpos] = max(spikes(valids,xind:xend)');
-        [mh ,mpos] = min(spikes(valids,xind:xend)');
-        if ceil(rect(1)) < 1 %if rect is out the axis, extreme in border count like inside the rectangle
-            xiborder=0;
-        else
-            xiborder=1;
-        end
-        if floor(rect(1) + rect(3)) > size(spikes,2) %if rect is out the axis, extreme in border count like inside the rectangle
-            xeborder = xD+2; 
-        else
-            xeborder = xD;   
-        end    
-        sp_selected = (Mh >= ymin & Mh <= ymax) & (Mpos > xiborder & Mpos < xeborder);
-        sp_selected = sp_selected |((mh >= ymin & mh <= ymax) & (mpos > xiborder & mpos < xeborder));
+        sp_selected=any(spikes(valids,xind:xend)' >= ymin & spikes(valids,xind:xend)' <= ymax);
         valids(valids==1) = sp_selected;
 
         if nnz(valids)==0
