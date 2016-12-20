@@ -710,11 +710,15 @@ function manual_clus_button_Callback(hObject, eventdata,handles_local, cl)
         ymin = rect(2);
         ymax = rect(2) + rect(4);
         yD = ymin - ymax;
-        if xD==0 || yD == 0; 
+        if yD == 0; 
             set(hObject,'Enable','on');
             return;
         end
-        sp_selected=any(spikes(valids,xind:xend)' >= ymin & spikes(valids,xind:xend)' <= ymax);
+        if xD==0
+            sp_selected=spikes(valids,xind:xend) >= ymin & spikes(valids,xind:xend) <= ymax;
+        else
+            sp_selected=any(spikes(valids,xind:xend)' >= ymin & spikes(valids,xind:xend)' <= ymax);
+        end
         valids(valids==1) = sp_selected;
 
         if nnz(valids)==0
