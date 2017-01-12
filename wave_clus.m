@@ -46,7 +46,7 @@ function varargout = wave_clus(varargin)
 % USER_DATA{20} - USER_DATA{42}, fix clusters
 % USER_DATA{53} = signal sample being plotted by Plot_continuous_data
 % USER_DATA{54} = sampling frequency of the signal sample being plotted by Plot_continuous_data
-% USER_DATA{55} = spike markers plotted by Plot_continuous_data and colored by colorSpikeMarkers
+% USER_DATA{55} = spike markers plotted by Plot_continuous_data and colored by color_spike_markers
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -241,15 +241,19 @@ end
 
 handles.par.file_name_to_show = [pathname filename];
 
+USER_DATA = get(handles.wave_clus_figure,'userdata');
 if (data_handler.with_raw || data_handler.with_psegment) && handles.par.cont_segment         %raw exists
     [xd_sub, sr_sub] = data_handler.get_signal_sample();
     % cache the signal sample for later calls to Plot_continuous_data
-    USER_DATA{53}=xd_sub;
-    USER_DATA{54}=sr_sub;
-    USER_DATA{55}=[]; % initially, there are no spike markers
-    set(handles.wave_clus_figure,'userdata',USER_DATA);
+    USER_DATA{53} = xd_sub;
+    USER_DATA{54} = sr_sub;
+    USER_DATA{55} = []; % initially, there are no spike markers
     Plot_continuous_data(xd_sub, sr_sub, handles); drawnow
     clear xd_sub
+else
+    USER_DATA{53}=[];
+    USER_DATA{54}=[];
+    USER_DATA{55}=[]; % initially, there are no spike markers
 end
 
 %Fixing lost elements of clu . Skiped elements will be  class -1 because in
@@ -272,7 +276,6 @@ elseif ~isempty(clu)
     clu = clu_aux;
     clear clu_aux
 end
-USER_DATA = get(handles.wave_clus_figure,'userdata');
 USER_DATA{1} = handles.par;
 USER_DATA{2} = spikes;
 USER_DATA{3} = index;
