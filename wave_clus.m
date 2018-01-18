@@ -67,6 +67,19 @@ else
 end
 % End initialization code - DO NOT EDIT
 
+function keyDownListener(src,event)
+    switch upper(event.Key)
+        case 'C'
+            USER_DATA = get(src,'userdata');
+            classes = USER_DATA{6};
+            times = USER_DATA{3}';
+            spikeTrainsCc(times,classes);
+        case 'S'
+            USER_DATA = get(src,'userdata');
+            classes = USER_DATA{6};
+            times = USER_DATA{3}';
+            spikeTrainsPsd(times,classes);
+    end
 
 % --- Executes just before wave_clus is made visible.
 function wave_clus_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -101,6 +114,7 @@ end
 % UIWAIT makes wave_clus wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
+set(hObject,'KeyPressFcn',@keyDownListener)
 
 % --- Outputs from this function are returned to the command line.
 function varargout = wave_clus_OutputFcn(hObject, eventdata, handles)
