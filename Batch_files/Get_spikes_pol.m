@@ -1,10 +1,10 @@
 function Get_spikes_pol(polytrodes, varargin)
 % function Get_spikes_pol(polytrodes, par_input)
 % Make polytrode spikes detecting and concatenating the spikes of all the
-% channels in the polytrodesN.txt used. 
+% channels in the polytrodeN.txt used. 
 % Saves spikes, spike times (in ms) and used parameters in filename_spikes.mat.
 
-% input must be a vector with the numbers(N) of polytrodesN.txt to use.
+% input must be a vector with the numbers(N) of polytrodeN.txt to use.
 
 % par_input must be a struct with some of the detecction parameters. All the
 % parameters included will overwrite the parameters load from set_parameters()
@@ -114,7 +114,7 @@ function get_spikes_pol_single(polytrode, par_input)
     
     index = [];
     spikes_all = [];
-    
+    thr = cell(min_num_seg,1);
     for n = 1:min_num_seg   %that's for cutting the data into pieces
         x(1,:) = data_handler_ch{1}.get_segment();
         poly_spikes = [];
@@ -133,7 +133,7 @@ function get_spikes_pol_single(polytrode, par_input)
             end
         end       
     
-        [spikes, new_index] = amp_detect_pol(x,par); clear x;
+        [spikes, new_index,thr{n}] = amp_detect_pol(x,par); clear x;
         index = [index data_handler_ch{1}.index2ts(new_index)];
         if length(spikes)~=0
             for i=1:n_channels
@@ -146,13 +146,13 @@ function get_spikes_pol_single(polytrode, par_input)
     end
 
     spikes = spikes_all;
-
     current_par = par;
     par = struct;
-    par.channels = n_channels;
     par = update_parameters(par, current_par, 'detect');
     par.detection_date =  datestr(now);
-    save([out_filename '_spikes'], 'spikes', 'index','par')
+	par.channels = n_channels;
+    thr = cell2mat(thr);
+    save([out_filename '_spikes'], 'spikes', 'index','par','thr')
 end
 
 function counter = count_new_sp_files(initial_date, polytrodes)

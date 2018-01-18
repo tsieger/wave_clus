@@ -7,6 +7,10 @@ inputs = par.inputs;
 nspk = size(spikes,1);
 ls = size(spikes,2);
 
+if inputs>ls
+	error('number of features exceeds spikes length');
+end
+
 % CALCULATES FEATURES
 switch feature
     case 'wav'
@@ -41,6 +45,9 @@ switch feature
         [C,S] = princomp(spikes);
         cc = S;
         coeff = 1:size(S,2);
+    case 'waveform'
+        cc = spikes;
+        coeff = 1:ls;
 end
 
 %CREATES INPUT MATRIX FOR SPC
